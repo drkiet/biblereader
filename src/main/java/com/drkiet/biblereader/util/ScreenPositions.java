@@ -18,4 +18,17 @@ public class ScreenPositions {
 	public static Point getCenterEast(int width, int height) {
 		return new Point(SCREENSIZE.width - width, (SCREENSIZE.height / 2) - height / 2);
 	}
+
+	public static Point getTopWest(int width, int height) {
+		return new Point(0, 0);
+	}
+
+	public static Point getCenterWest(int width, int height) {
+		return new Point(0, (SCREENSIZE.height / 2) - height / 2);
+	}
+
+	public static Point getBottomWest(int width, int height) {
+		return new Point(0, SCREENSIZE.height - height);
+	}
+
 }

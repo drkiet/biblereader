@@ -15,6 +15,7 @@ import javax.swing.text.JTextComponent;
  *
  */
 public class FancyCaret extends DefaultCaret {
+	private static final long serialVersionUID = -4281610406114698870L;
 
 	protected synchronized void damage(Rectangle r) {
 		if (r == null)

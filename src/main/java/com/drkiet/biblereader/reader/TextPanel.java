@@ -2,24 +2,22 @@ package com.drkiet.biblereader.reader;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextPane;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -36,14 +34,25 @@ import com.drkiet.biblereader.commentary.CommentaryFrame;
 import com.drkiet.biblereader.reference.ReaderListener;
 import com.drkiet.biblereader.reference.RelatedVersesFrame;
 import com.drkiet.biblereader.translation.TranslationFrame;
+import com.drkiet.biblereader.util.FileHelper;
 import com.drkiet.biblereader.reference.ReaderListener.Command;
 import com.drkiettran.text.ReadingTextManager;
-import com.drkiettran.text.TextApp;
 import com.drkiettran.text.model.Document;
 import com.drkiettran.text.model.Page;
 import com.drkiettran.text.model.SearchResult;
 import com.drkiettran.text.model.Word;
 
+/**
+ * TextPanel consists of three main components:
+ * <ul>
+ * <li>Reading word Label (Label)
+ * <li>Reading text area (TextArea)
+ * <li>Information area (Label)
+ * </ul>
+ * 
+ * @author ktran
+ *
+ */
 public class TextPanel extends JPanel {
 	private static final Logger LOGGER = LoggerFactory.getLogger(TextPanel.class);
 
@@ -56,14 +65,13 @@ public class TextPanel extends JPanel {
 	public static final int LARGEST_TEXT_AREA_FONT_SIZE = 32;
 	public static final long serialVersionUID = -825536523977292110L;
 
-	private String helpText = loadHelpText();
 	private JTextArea textArea;
 	private JLabel displayingWordLabel;
 	private String readingText = null;
 	private JLabel infoLabel;
 	private JLabel titleLabel;
 
-	private RelatedVersesFrame relatedVersesFrame = new RelatedVersesFrame();;
+	private RelatedVersesFrame relatedVersesFrame = new RelatedVersesFrame();
 	private CommentaryFrame commentaryFrame = new CommentaryFrame();
 	private TranslationFrame translationFrame = new TranslationFrame();
 
@@ -72,7 +80,6 @@ public class TextPanel extends JPanel {
 	private Object highlightedWord = null;
 
 	private ReaderListener readerListener;
-	private ReadingTextManager readingTextManager;
 
 	private String displayingFontName = "Candara";
 	private String infoFontName = "Candara";
@@ -81,9 +88,10 @@ public class TextPanel extends JPanel {
 	private String textAreaFontName = "Candara";
 	private int textAreaFontSize = DEFAULT_TEXT_AREA_FONT_SIZE;
 	private int defaultBlinkRate = 0;
-	private boolean doneReading = false;
 
 	private Document document = null;
+	private ReadingTextManager readingTextManager = null;
+	private boolean doneReading = true;
 	private Word selectedWord = null;
 	private Word wordAtMousePos = null;
 	private SearchResult searchResult = null;
@@ -98,6 +106,9 @@ public class TextPanel extends JPanel {
 	}
 
 	private void resetState() {
+		document = null;
+		readingText = null;
+		doneReading = true;
 		selectedWord = null;
 		wordAtMousePos = null;
 		searchResult = null;
@@ -106,11 +117,12 @@ public class TextPanel extends JPanel {
 		currentLine = null;
 		currentLineNumber = 0;
 		currentVerseNumber = 0;
+		infoLabel.setText(null);
+		displayingWordLabel.setText(null);
 	}
 
 	public TextPanel() {
 		arrangeFixedComponents();
-		makeTextArea();
 		setBorder();
 		arrangeLayout();
 	}
@@ -119,6 +131,7 @@ public class TextPanel extends JPanel {
 		displayingWordLabel = new JLabel();
 		displayingWordLabel.setFont(new Font(displayingFontName, Font.PLAIN, displayingWordFontSize));
 		displayingWordLabel.setHorizontalAlignment(JLabel.CENTER);
+		textArea = new JTextArea();
 		infoLabel = new JLabel("");
 		infoLabel.setFont(new Font(infoFontName, Font.PLAIN, infoFontSize));
 		titleLabel = new JLabel("Title:");
@@ -127,25 +140,51 @@ public class TextPanel extends JPanel {
 	private void arrangeLayout() {
 		setLayout(new BorderLayout());
 		add(displayingWordLabel, BorderLayout.NORTH);
-		add(new JScrollPane(textArea), BorderLayout.CENTER);
+		addWelcomePane();
 		add(titleLabel, BorderLayout.SOUTH);
 		add(infoLabel, BorderLayout.SOUTH);
 	}
 
+	private void addWelcomePane() {
+		removeComponentOnCenterLayout();
+		JTextPane textPane = new JTextPane();
+		textPane.setContentType("text/html");
+		textPane.setForeground(Color.GREEN);
+		textPane.setBackground(new Color(245, 245, 245));
+
+		textPane.setText(FileHelper.loadTextFileIntoString("/About.html"));
+
+		add(textPane, BorderLayout.CENTER);
+	}
+
+	public void removeComponentOnCenterLayout() {
+		BorderLayout layout = (BorderLayout) getLayout();
+		Component comp = layout.getLayoutComponent(BorderLayout.CENTER);
+		if (comp != null) {
+			remove(comp);
+		}
+	}
+
+	private void addTextPane() {
+		removeComponentOnCenterLayout();
+		makeTextArea();
+		add(new JScrollPane(textArea), BorderLayout.CENTER);
+	}
+
 	private void setBorder() {
-		Border innerBorder = BorderFactory.createTitledBorder("Reading");
+		Border innerBorder = BorderFactory.createTitledBorder("Scripture");
 		Border outterBorder = BorderFactory.createEmptyBorder(5, 5, 5, 5);
 		setBorder(BorderFactory.createCompoundBorder(outterBorder, innerBorder));
 	}
 
 	private void makeTextArea() {
-		displayHelpText();
 		defaultBlinkRate = textArea.getCaret().getBlinkRate();
 		textArea.setCaretPosition(0);
 		textArea.setCaretColor(Color.white);
 		textArea.setFont(new Font(textAreaFontName, Font.PLAIN, textAreaFontSize));
 		textArea.setLineWrap(true);
 		textArea.setWrapStyleWord(true);
+		textArea.setEditable(false);
 
 		textArea.getDocument().addDocumentListener(new DocumentListener() {
 
@@ -226,13 +265,6 @@ public class TextPanel extends JPanel {
 			}
 		};
 
-	}
-
-	private String htmlReplace(String text) {
-		String pattern = "(?i)\\b((?:https?://|www\\d{0,3}[.]|[a-z0-9.\\-]+[.][a-z]{2,4}/)(?:[^\\s()<>]+|\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*\\))+(?:\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*\\)|[^\\s`!()\\[\\]{};:\'\".,<>?«»“”‘’]))";
-		Pattern patt = Pattern.compile(pattern);
-		Matcher matcher = patt.matcher(text);
-		return matcher.replaceAll("<a href=\"$1\">$1</a>");
 	}
 
 	public boolean mouseOverWord(int caretPos) {
@@ -317,35 +349,12 @@ public class TextPanel extends JPanel {
 
 		infoLabel.setText(labelText + cursorInfo);
 		LOGGER.info("line {}: {}", currentLineNumber, currentTextAreaByLines.get(currentLineNumber));
-//		textArea.setCaretPosition(currentLineNumber);
-	}
-
-	private void displayHelpText() {
-		textArea = new JTextArea(helpText);
-	}
-
-	public void setHelpText(String helpText) {
-		this.helpText = helpText;
-	}
-
-	private void restart() {
-		LOGGER.info("Restart Reading to load help ...");
-		resetState();
-		readingTextManager = new ReadingTextManager(helpText);
 	}
 
 	public void resetReading() {
 		LOGGER.info("Reset reading ...");
-		document = null;
-		restart();
-		readingText = null;
-		textArea.setText(helpText);
-		currentTextAreaByLines = Arrays.asList(helpText.split("\n"));
-		textArea.setCaret(new DefaultCaret());
-		textArea.setCaretPosition(0);
-		textArea.requestFocus();
-		displayingWordLabel.setText("");
-		infoLabel.setText("");
+		addWelcomePane();
+		resetState();
 		repaint();
 	}
 
@@ -410,7 +419,6 @@ public class TextPanel extends JPanel {
 	}
 
 	private void displaySearchResult() {
-
 		infoLabel.setText(String.format("found %d '%s's", searchResult.getNumberMatchedWords(), searchText));
 		infoLabel.setForeground(Color.BLUE);
 	}
@@ -423,24 +431,6 @@ public class TextPanel extends JPanel {
 		this.readerListener = readerListener;
 	}
 
-	private String loadHelpText() {
-		try (InputStream is = TextApp.class.getResourceAsStream("/Helpfile.txt")) {
-			StringBuilder sb = new StringBuilder();
-
-			for (;;) {
-				int c = is.read();
-				if (c < 0) {
-					break;
-				}
-				sb.append((char) c);
-			}
-			return sb.toString();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-
 	public void stopReading() {
 		textArea.setCaret(new DefaultCaret());
 		textArea.getCaret().setBlinkRate(defaultBlinkRate);
@@ -450,7 +440,12 @@ public class TextPanel extends JPanel {
 	}
 
 	public void startReading() {
+		if (document == null) {
+			return;
+		}
+
 		textArea.setCaret(new FancyCaret());
+
 		if (document != null && readingTextManager == null) {
 			displayPageText(document.getCurrentPage());
 		}
@@ -460,6 +455,8 @@ public class TextPanel extends JPanel {
 		} else {
 			textArea.setCaretPosition(0);
 		}
+
+		doneReading = false;
 		textArea.requestFocus();
 	}
 
@@ -488,8 +485,7 @@ public class TextPanel extends JPanel {
 				LOGGER.debug("highlighted at /{}/", matchedWords.get(idx));
 				highlightedWords.add(highlight(matchedWords.get(idx), idx, Color.GREEN, null));
 			} catch (BadLocationException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				LOGGER.error("Bad location exception: {}", e);
 			}
 		}
 		displaySearchResult();
@@ -510,7 +506,7 @@ public class TextPanel extends JPanel {
 	}
 
 	public void startReadingAt() {
-		if (readingTextManager != null) {
+		if (document != null && readingTextManager != null) {
 			readingTextManager.setCurrentCaret(selectedWord.getIndexOfText());
 			startReading();
 		}
@@ -518,6 +514,7 @@ public class TextPanel extends JPanel {
 
 	public void loadTextFromFile(Document document) {
 		this.document = document;
+		addTextPane();
 		displayPageText(document.getCurrentPage());
 	}
 
@@ -541,13 +538,11 @@ public class TextPanel extends JPanel {
 
 	public void displayPageText(Page page) {
 		readingTextManager = page.getRtm();
-		resetState();
+
 		readingText = readingTextManager.getReadingText();
 		if (emptyReadingText()) {
 			textArea.setText("*** PAGE IS EMPTY! ***");
 		} else {
-//			textArea.setText(readingText);
-//			currentTextAreaByLines = Arrays.asList(readingText.split("\n"));
 			displayText();
 		}
 		textArea.setCaretPosition(0);

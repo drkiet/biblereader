@@ -1,4 +1,4 @@
-package com.drkiet.biblereader.translation;
+package com.drkiet.biblereader.help;
 
 import java.awt.BorderLayout;
 
@@ -8,17 +8,17 @@ import com.drkiet.biblereader.reference.ReaderListener.Command;
 import com.drkiet.biblereader.util.FontSizingToolbarPanel;
 import com.drkiet.biblereader.util.ScreenPositions;
 
-public class TranslationFrame extends JFrame {
+public class HelpFrame extends JFrame {
+	private static final long serialVersionUID = -2838312659227965342L;
 
-	private static final long serialVersionUID = 4689102811730742079L;
-	private TranslationPanel translationPanel;
+	private HelpPanel helpPanel;
 	private FontSizingToolbarPanel fontSizingToolbarPanel;
 
-	public TranslationFrame() {
+	public HelpFrame() {
 		setLayout(new BorderLayout());
-		setTitle("Translation");
-		setSize(400, 350);
-		translationPanel = new TranslationPanel();
+		setTitle("FAQs");
+		setSize(700, 600);
+		helpPanel = new HelpPanel();
 		fontSizingToolbarPanel = new FontSizingToolbarPanel();
 
 		fontSizingToolbarPanel.setReaderListener((Command cmd) -> {
@@ -38,21 +38,17 @@ public class TranslationFrame extends JFrame {
 		});
 
 		add(fontSizingToolbarPanel, BorderLayout.NORTH);
-		add(translationPanel, BorderLayout.CENTER);
-		setLocation(ScreenPositions.getBottomEast(400, 350));
+		add(helpPanel, BorderLayout.CENTER);
+		setLocation(ScreenPositions.getTopWest(700, 600));
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setVisible(true);
 	}
 
 	private void makeSmallerFont() {
-		translationPanel.setSmallerText();
+		helpPanel.setSmallerText();
 	}
 
 	private void makeLargerFont() {
-		translationPanel.setLargerText();
-	}
-
-	public void setText(String text) {
-		translationPanel.setText(text);
+		helpPanel.setLargerText();
 	}
 }

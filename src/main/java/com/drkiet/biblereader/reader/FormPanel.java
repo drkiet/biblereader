@@ -8,7 +8,6 @@ import java.awt.event.ActionEvent;
 import java.util.List;
 
 import javax.swing.BorderFactory;
-import javax.swing.ComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -38,7 +37,7 @@ public class FormPanel extends JPanel {
 	private static final long serialVersionUID = 3506596135223108382L;
 	private JLabel bookNameLabel;
 	private JComboBox<String> bookNameComboBox;
-	private JButton loadButton;
+	private JButton openButton;
 	private JLabel speedLabel;
 	private JTextField speedField;
 	private JLabel searchTextLabel;
@@ -85,7 +84,7 @@ public class FormPanel extends JPanel {
 		dim.width = 250;
 		setPreferredSize(dim);
 
-		bookNameLabel = new JLabel("Select a Book: ");
+		bookNameLabel = new JLabel("Select a book: ");
 		bookNameComboBox = new JComboBox<String>((String[]) getListOfBookNames().toArray());
 		translationLabel = new JLabel("Translation: ");
 		translationComboBox = new JComboBox<String>((String[]) getListOfTranslations().toArray());
@@ -99,7 +98,7 @@ public class FormPanel extends JPanel {
 		speedField.setText("" + speedWpm);
 
 		setButton = new JButton("Set");
-		loadButton = new JButton("Load");
+		openButton = new JButton("Open");
 		searchButton = new JButton("Search");
 		nextFindButton = new JButton("Next");
 		goToPageNoButton = new JButton("Go to");
@@ -108,15 +107,15 @@ public class FormPanel extends JPanel {
 			speedWpm = Integer.valueOf(speedField.getText());
 		});
 
-		loadButton.addActionListener((ActionEvent actionEvent) -> {
+		openButton.addActionListener((ActionEvent actionEvent) -> {
 			bookName = (String) bookNameComboBox.getSelectedItem();
-			translation = (String)translationComboBox.getSelectedItem();
-			
+			translation = (String) translationComboBox.getSelectedItem();
+
 			TextApp textApp = new TextApp(translation);
 
 			document = textApp.getPages(bookName);
 			if (document == null) {
-				loadingError = "Unable to load " + bookName;
+				loadingError = "Unable to open " + bookName;
 			} else {
 				LOGGER.info("{} has {} pages", bookName, document.getPageCount());
 				loadingError = "";
@@ -144,7 +143,7 @@ public class FormPanel extends JPanel {
 			readerListener.invoke(Command.SELECT_TRANSLATION);
 		});
 
-		Border innerBorder = BorderFactory.createTitledBorder("Configuration");
+		Border innerBorder = BorderFactory.createTitledBorder("Settings");
 		Border outterBorder = BorderFactory.createEmptyBorder(5, 5, 5, 5);
 		setBorder(BorderFactory.createCompoundBorder(outterBorder, innerBorder));
 
@@ -236,7 +235,7 @@ public class FormPanel extends JPanel {
 		gc.gridx = 1;
 		gc.insets = new Insets(0, 0, 0, 0);
 		gc.anchor = GridBagConstraints.FIRST_LINE_START;
-		add(loadButton, gc);
+		add(openButton, gc);
 
 		// Always do the following to avoid future confusion :)
 		gc.gridy++;
@@ -307,7 +306,7 @@ public class FormPanel extends JPanel {
 		goToPageNoButton.setEnabled(false);
 	}
 
-	public void enableGoTo() {
+	public void enableGoto() {
 		pageNoTextField.setEnabled(true);
 		goToPageNoButton.setEnabled(true);
 	}

@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 
 import javax.swing.JFrame;
 
-import com.drkiet.biblereader.reference.ReaderListener;
 import com.drkiet.biblereader.reference.ReaderListener.Command;
 import com.drkiet.biblereader.util.ScreenPositions;
 
@@ -40,7 +39,7 @@ public class CommentaryFrame extends JFrame {
 		add(commentaryToolbarPanel, BorderLayout.NORTH);
 		add(commentaryPanel, BorderLayout.CENTER);
 		setLocation(ScreenPositions.getCenterEast(400, 350));
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setVisible(true);
 	}
 

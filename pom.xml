@@ -28,6 +28,13 @@
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
+
+			<groupId>com.drkiettran</groupId>
+			<artifactId>scripture-in-action</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>${junit.version}</version>
@@ -64,6 +71,12 @@
 			<version>${guice.version}</version>
 		</dependency>
 
+		<!-- https://mvnrepository.com/artifact/org.tautua.markdownpapers/markdownpapers-core -->
+		<dependency>
+			<groupId>org.tautua.markdownpapers</groupId>
+			<artifactId>markdownpapers-core</artifactId>
+			<version>1.4.4</version>
+		</dependency>
 
 	</dependencies>
 

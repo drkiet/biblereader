@@ -1,6 +1,8 @@
 package com.drkiet.biblereader.reader;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
@@ -9,147 +11,83 @@ import java.util.Timer;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JTextPane;
+import javax.swing.UIManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.drkiet.biblereader.help.HelpFrame;
 import com.drkiet.biblereader.reference.ReaderListener.Command;
+import com.drkiet.biblereader.util.FileHelper;
 import com.drkiettran.text.model.Document;
 import com.drkiettran.text.model.SearchResult;
 
 public class MainFrame extends JFrame {
+	private static final long serialVersionUID = -5184507871687024902L;
 	private static final Logger LOGGER = LoggerFactory.getLogger(MainFrame.class);
 
-	private static final long serialVersionUID = -5184507871687024902L;
-	private TextPanel textPanel;
-	private Toolbar toolbar;
-	private FormPanel formPanel;
-	private HelpPictureDialog helpPictureDialog;
-	private JFileChooser fileChooser;
+	private TextPanel textPanel = new TextPanel();
+	private Toolbar toolbar = new Toolbar();
+	private FormPanel formPanel = new FormPanel();
+	private HelpPictureDialog helpPictureDialog = new HelpPictureDialog(this);;
+	private JFileChooser fileChooser = new JFileChooser();
+	private InfoPanel infoPanel = new InfoPanel();
+	private JMenuBar menubar = new JMenuBar();
+
 	private TextTimerTask textTimerTask = null;
 	private Timer timer = null;
-	private InfoPanel infoPanel;
-	private String bookName;
-	private Document document;
+
+	private String bookName = null;
+	private Document document = null;
 	private List<SearchResult> searchResults = null;
-	private String searchText;
-
-	private String selectedBookName;
-	private String selectedTranslation;
-
-	private String translation;
+	private String searchText = null;
+	private String selectedBookName = null;
+	private String selectedTranslation = null;
+	private String translation = null;
 
 	public MainFrame() throws IOException {
 		super("Bible Reader");
-
-		setLayout(new BorderLayout());
-		toolbar = new Toolbar();
-		textPanel = new TextPanel();
-		infoPanel = new InfoPanel();
-		formPanel = new FormPanel();
 		infoPanel.setFrame(this);
-		fileChooser = new JFileChooser();
+		manageMenubar();
+		manageListeners();
+		manageLayout();
+	}
 
-		helpPictureDialog = new HelpPictureDialog(this);
+	private void manageMenubar() {
+		JMenu menu = new JMenu("File");
+		JMenuItem menuItem = new JMenuItem("Exit");
+		menuItem.addActionListener((event) -> System.exit(0));
+		menu.add(menuItem);
+		menubar.add(menu);
 
-		formPanel.setReaderListener((Command cmd) -> {
-			switch (cmd) {
-			case LOAD:
-				loadSelectedBook();
-				break;
-			case SELECT_BOOK:
-				selectedBookName = formPanel.getSelectedBookName();
-				LOGGER.info("Selected book {}", selectedBookName);
-				break;
-			case SELECT_TRANSLATION:
-				selectedTranslation = formPanel.getselectedTranslation();
-				LOGGER.info("Selected translation {}", selectedTranslation);
-			case SEARCH:
-				searchText = formPanel.getSearchText();
-				searchText(searchText);
-				searchTextInDocument(searchText);
-				break;
-			case NEXTFIND:
-				nextFind();
-				break;
-			case GOTO:
-				goToPage(formPanel.getGotoPageNo());
-			default:
-				break;
-			}
-		});
+		menu = new JMenu("Help");
+		menuItem = new JMenuItem("About");
+		menuItem.addActionListener((event) -> displayAbout(event));
+		menu.add(menuItem);
+		menubar.add(menu);
+		setJMenuBar(menubar);
 
-		textPanel.setReaderListener((Command cmd) -> {
-			switch (cmd) {
-			case RESET:
-				resetReading();
-				break;
-			default:
-				break;
-			}
-		});
+	}
 
-		textPanel.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				if (isReading()) {
-					stopReading();
-				} else {
-					startReading();
-				}
-			}
-		});
+	private void displayAbout(ActionEvent event) {
+		JTextPane textPane = new JTextPane();
+		textPane.setContentType("text/html");
+		textPane.setForeground(Color.BLACK);
+		textPane.setBackground(Color.WHITE);
+		UIManager.put("OptionPane.background", Color.white);
+		UIManager.put("Panel.background", Color.white);
 
-		toolbar.setReaderListener((Command cmd) -> {
-			switch (cmd) {
-			case START_AT:
-				startReadingAtCaret();
-				// let it fall through ...
-			case START:
-				startReading();
-				formPanel.enableSearch();
-				break;
+		textPane.setText(FileHelper.loadTextFileIntoString("/About.html"));
+		JOptionPane.showMessageDialog(this, textPane, "About Bible Reader", JOptionPane.INFORMATION_MESSAGE);
+	}
 
-			case RESET:
-				resetReading();
-				// let it fall ...
-			case STOP:
-				stopReading();
-				break;
-
-			case LARGER_TEXT_FONT:
-				makeLargerFont();
-				break;
-
-			case SMALLER_TEXT_FONT:
-				makeSmallerFont();
-				break;
-
-			case PREVIOUS_PAGE:
-				previousPage();
-				break;
-
-			case NEXT_PAGE:
-				nextPage();
-				break;
-
-			case LARGER_WORD_FONT:
-				textPanel.setLargerWordFont();
-				break;
-
-			case SMALLER_WORD_FONT:
-				textPanel.setSmallerWordFont();
-				break;
-
-			case HELP_PICTURE:
-				helpPictureDialog.setVisible(!helpPictureDialog.isVisible());
-				break;
-
-			default:
-				break;
-			}
-		});
-
+	public void manageLayout() {
+		setLayout(new BorderLayout());
 		add(formPanel, BorderLayout.WEST);
 		add(toolbar, BorderLayout.NORTH);
 		add(textPanel, BorderLayout.CENTER);
@@ -159,6 +97,131 @@ public class MainFrame extends JFrame {
 		setLocationRelativeTo(null);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setVisible(true);
+	}
+
+	public void manageListeners() {
+		formPanel.setReaderListener((Command cmd) -> {
+			processForm(cmd);
+		});
+
+		textPanel.setReaderListener((Command cmd) -> {
+			processText(cmd);
+		});
+
+		textPanel.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				processMouseClickedInTextPanel();
+			}
+
+		});
+
+		toolbar.setReaderListener((Command cmd) -> {
+			processButtonsOnToolbar(cmd);
+		});
+	}
+
+	public void processButtonsOnToolbar(Command cmd) {
+		switch (cmd) {
+		case START_AT:
+			startReadingAtCaret();
+			// *** LET IT FALL THROUGH ***
+
+		case START:
+			startReading();
+			if (!textPanel.isDoneReading()) {
+				formPanel.enableSearch();
+				formPanel.enableGoto();
+			}
+			break;
+
+		case RESET:
+			resetReading();
+			stopReading();
+			formPanel.disableSearch();
+			formPanel.disableGoto();
+			break;
+
+		case STOP:
+			stopReading();
+			break;
+
+		case LARGER_TEXT_FONT:
+			makeLargerFont();
+			break;
+
+		case SMALLER_TEXT_FONT:
+			makeSmallerFont();
+			break;
+
+		case PREVIOUS_PAGE:
+			previousPage();
+			break;
+
+		case NEXT_PAGE:
+			nextPage();
+			break;
+
+		case LARGER_WORD_FONT:
+			textPanel.setLargerWordFont();
+			break;
+
+		case SMALLER_WORD_FONT:
+			textPanel.setSmallerWordFont();
+			break;
+
+		case HELP_PICTURE:
+			new HelpFrame();
+			break;
+
+		default:
+			break;
+		}
+	}
+
+	private void processMouseClickedInTextPanel() {
+		if (isReading()) {
+			stopReading();
+		} else {
+			startReading();
+		}
+	}
+
+	private void processText(Command cmd) {
+		switch (cmd) {
+		case RESET:
+			resetReading();
+			break;
+		default:
+			break;
+		}
+	}
+
+	private void processForm(Command cmd) {
+		switch (cmd) {
+		case LOAD:
+			loadSelectedBook();
+			break;
+		case SELECT_BOOK:
+			selectedBookName = formPanel.getSelectedBookName();
+			LOGGER.info("Selected book {}", selectedBookName);
+			break;
+		case SELECT_TRANSLATION:
+			selectedTranslation = formPanel.getselectedTranslation();
+			LOGGER.info("Selected translation {}", selectedTranslation);
+		case SEARCH:
+			searchText = formPanel.getSearchText();
+			searchText(searchText);
+			searchTextInDocument(searchText);
+			break;
+		case NEXTFIND:
+			nextFind();
+			break;
+		case GOTO:
+			goToPage(formPanel.getGotoPageNo());
+		default:
+			break;
+		}
 	}
 
 	private void nextFind() {
@@ -224,7 +287,7 @@ public class MainFrame extends JFrame {
 		if (document != null) {
 			textPanel.loadTextFromFile(document);
 			formPanel.enableSearch();
-			formPanel.enableGoTo();
+			formPanel.enableGoto();
 
 			// @formatter:off
 			sb.append('\n')
@@ -258,6 +321,7 @@ public class MainFrame extends JFrame {
 	}
 
 	public void resetReading() {
+		document = null;
 		textPanel.resetReading();
 	}
 
@@ -271,7 +335,7 @@ public class MainFrame extends JFrame {
 	}
 
 	public void startReading() {
-		if (!isReading()) {
+		if (!isReading() && document != null) {
 			textTimerTask = new TextTimerTask();
 			textTimerTask.register(textPanel);
 			timer = new Timer();

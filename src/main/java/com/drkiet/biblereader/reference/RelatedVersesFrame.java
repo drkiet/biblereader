@@ -39,7 +39,7 @@ public class RelatedVersesFrame extends JFrame {
 		add(relatedVersesToolbarPanel, BorderLayout.NORTH);
 		add(relatedVersesPanel, BorderLayout.CENTER);
 		setLocation(ScreenPositions.getTopEast(400, 350));
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setVisible(true);
 	}
 
