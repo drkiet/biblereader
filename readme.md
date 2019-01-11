@@ -7,6 +7,14 @@ The code remains a 'hack'. I am spending time to improve by refactoring the code
 
 More documentation is to follow. I promise.
 
+## Java Swing Application
+This project was developed using Java Swing 8.
+
+## Build
+
+## Run time dependency
+
+
 ## License
 
 ### Code

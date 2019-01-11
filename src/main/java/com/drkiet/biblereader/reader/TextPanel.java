@@ -17,7 +17,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextPane;
-import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -290,13 +289,14 @@ public class TextPanel extends JPanel {
 			LOGGER.error("Bad location: {}", e);
 		}
 
-		currentLine = currentTextAreaByLines.get(currentLineNumber).trim();
+		currentLine = getCurrentLineText(currentLineNumber);
 
-		if (currentLine.isEmpty() || readingTextManager == null) {
+		if (currentLine == null || currentLine.isEmpty() || readingTextManager == null) {
 			textArea.setToolTipText(null);
 			return;
 		}
 
+		currentLine = currentLine.trim();
 		int firstBlankIdx = currentLine.indexOf(' ');
 
 		currentVerseNumber = Integer.valueOf(currentLine.substring(0, firstBlankIdx));
@@ -309,6 +309,14 @@ public class TextPanel extends JPanel {
 		displayCommentary();
 		repaint();
 
+	}
+
+	private String getCurrentLineText(int currentLineNumber) {
+		if (currentLineNumber <= currentTextAreaByLines.size() - 1) {
+			return currentTextAreaByLines.get(currentLineNumber);
+		} else {
+			return currentTextAreaByLines.get(currentTextAreaByLines.size() - 1);
+		}
 	}
 
 	private void displayTranslation() {
@@ -348,7 +356,7 @@ public class TextPanel extends JPanel {
 		}
 
 		infoLabel.setText(labelText + cursorInfo);
-		LOGGER.info("line {}: {}", currentLineNumber, currentTextAreaByLines.get(currentLineNumber));
+		LOGGER.info("line {}: {}", currentLineNumber, getCurrentLineText(currentLineNumber));
 	}
 
 	public void resetReading() {

@@ -16,7 +16,7 @@ public class HelpFrame extends JFrame {
 
 	public HelpFrame() {
 		setLayout(new BorderLayout());
-		setTitle("FAQs");
+		setTitle("Help");
 		setSize(700, 600);
 		helpPanel = new HelpPanel();
 		fontSizingToolbarPanel = new FontSizingToolbarPanel();

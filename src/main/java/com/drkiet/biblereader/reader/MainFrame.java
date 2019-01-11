@@ -34,7 +34,6 @@ public class MainFrame extends JFrame {
 	private TextPanel textPanel = new TextPanel();
 	private Toolbar toolbar = new Toolbar();
 	private FormPanel formPanel = new FormPanel();
-	private HelpPictureDialog helpPictureDialog = new HelpPictureDialog(this);;
 	private JFileChooser fileChooser = new JFileChooser();
 	private InfoPanel infoPanel = new InfoPanel();
 	private JMenuBar menubar = new JMenuBar();

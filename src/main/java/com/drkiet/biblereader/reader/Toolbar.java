@@ -42,11 +42,11 @@ public class Toolbar extends JPanel implements ActionListener {
 		setBorder(BorderFactory.createEtchedBorder());
 		readButton = new JButton();
 		readButton.setIcon(createIcon("/icons/Play16.gif"));
-		readButton.setToolTipText("Read");
+		readButton.setToolTipText("Start/Continue");
 
 		stopButton = new JButton();
 		stopButton.setIcon(createIcon("/icons/Pause16.gif"));
-		stopButton.setToolTipText("Stop");
+		stopButton.setToolTipText("Pause");
 
 		resetButton = new JButton();
 		resetButton.setIcon(createIcon("/icons/Stop16.gif"));
@@ -54,7 +54,7 @@ public class Toolbar extends JPanel implements ActionListener {
 
 		readAtButton = new JButton();
 		readAtButton.setIcon(createIcon("/icons/StepForward16.gif"));
-		readAtButton.setToolTipText("Read At");
+		readAtButton.setToolTipText("Start at Cursor");
 
 		largerTextFontButton = new JButton();
 		largerTextFontButton.setIcon(createIcon("/icons/Up16.gif"));
@@ -66,11 +66,11 @@ public class Toolbar extends JPanel implements ActionListener {
 
 		previousPageButton = new JButton();
 		previousPageButton.setIcon(createIcon("/icons/previous16.gif"));
-		previousPageButton.setToolTipText("Previous Page");
+		previousPageButton.setToolTipText("Previous Chapter");
 
 		nextPageButton = new JButton();
 		nextPageButton.setIcon(createIcon("/icons/next16.gif"));
-		nextPageButton.setToolTipText("Next Page");
+		nextPageButton.setToolTipText("Next Chapter");
 
 		largerWordFontButton = new JButton();
 		largerWordFontButton.setIcon(createIcon("/icons/ZoomIn16.gif"));
